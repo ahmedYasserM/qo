@@ -13,6 +13,7 @@ var rootCmd = &cobra.Command{
 
 // Execute executes the root command.
 func Execute() error {
+
 	// Customize cobra output
 	cc.Init(&cc.Config{
 		RootCmd:         rootCmd,

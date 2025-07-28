@@ -49,8 +49,6 @@ var startCmd = &cobra.Command{
 	Short: "Start a test session in a sandboxed environment.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		// if len(os.Args) == 1 && os.Args[0] != "qo" {
-
 		if os.Geteuid() != 0 {
 			logger.Error(fmt.Errorf("This program must be run as root."))
 			os.Exit(1)
@@ -65,13 +63,10 @@ var startCmd = &cobra.Command{
 		}
 
 		logger.Success(fmt.Sprintf("%s folder is unpacked and decrypted successfully.", archivePath))
-		// }
 
-		if err := sandbox.StartSandBox(); err != nil {
-			return err
-		}
+		err := sandbox.StartSandBox()
 
-		return nil
+		return err
 	},
 }
 
