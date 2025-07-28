@@ -26,10 +26,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/ahmedYasserM/qo/pkg/archive"
 	"github.com/ahmedYasserM/qo/pkg/logger"
+	"github.com/ahmedYasserM/qo/pkg/sandbox"
 	"github.com/spf13/cobra"
 )
 
@@ -46,11 +48,28 @@ var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start a test session in a sandboxed environment.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := archive.DecryptTarArchive(archivePath, password); err != nil {
-			logger.Error(err)
+
+		// if len(os.Args) == 1 && os.Args[0] != "qo" {
+
+		if os.Geteuid() != 0 {
+			logger.Error(fmt.Errorf("This program must be run as root."))
+			os.Exit(1)
+		}
+
+		if err := sandbox.ExtractRootfs(); err != nil {
 			return err
 		}
+
+		if err := archive.DecryptTarArchive(archivePath, passwordStart, utKeyStart); err != nil {
+			return err
+		}
+
 		logger.Success(fmt.Sprintf("%s folder is unpacked and decrypted successfully.", archivePath))
+		// }
+
+		if err := sandbox.StartSandBox(); err != nil {
+			return err
+		}
 
 		return nil
 	},
@@ -72,4 +91,7 @@ func init() {
 	startCmd.MarkFlagRequired("password")
 	startCmd.MarkFlagRequired("key")
 	startCmd.MarkFlagRequired("duration")
+
+	rootCmd.SilenceUsage = true
+	rootCmd.SilenceErrors = true
 }

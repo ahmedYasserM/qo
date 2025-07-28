@@ -6,9 +6,11 @@ import (
 	"crypto/cipher"
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/ahmedYasserM/qo/pkg/logger"
+	"github.com/ahmedYasserM/qo/pkg/sandbox"
 )
 
 func newStreamDecryptReader(r io.Reader, key []byte, nonce []byte) (io.Reader, error) {
@@ -58,7 +60,7 @@ func checkUnlockTime(ut string) (bool, error) {
 	return now.After(parsedUt) || now.Equal(parsedUt), nil
 }
 
-func DecryptTarArchive(encryptedFile, password string) error {
+func DecryptTarArchive(encryptedFile, password, utKey string) error {
 	file, err := os.Open(encryptedFile)
 	if err != nil {
 		return err
@@ -106,7 +108,7 @@ func DecryptTarArchive(encryptedFile, password string) error {
 			}
 
 			// Decrypt the unlock time
-			if ut, err = decrypt(encryptedUt, DeriveKey("bar", salt)); err != nil {
+			if ut, err = decrypt(encryptedUt, DeriveKey(utKey, salt)); err != nil {
 				return err
 			}
 
@@ -155,13 +157,18 @@ func DecryptTarArchive(encryptedFile, password string) error {
 			continue
 		}
 
+		dest := filepath.Join(sandbox.Rootfs, "tmp", header.Name)
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(header.Name, os.FileMode(header.Mode)); err != nil {
+			if err := os.MkdirAll(dest, os.FileMode(header.Mode)); err != nil {
 				return err
 			}
 		case tar.TypeReg:
-			toFile, err := os.OpenFile(header.Name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode))
+			if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+				return err
+			}
+
+			toFile, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode))
 			defer toFile.Close()
 			if err != nil {
 				return err
@@ -169,6 +176,14 @@ func DecryptTarArchive(encryptedFile, password string) error {
 
 			if _, err = io.Copy(toFile, tr); err != nil {
 				toFile.Close()
+				return err
+			}
+		case tar.TypeSymlink:
+			if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+				return err
+			}
+
+			if err := os.Symlink(header.Linkname, dest); err != nil {
 				return err
 			}
 

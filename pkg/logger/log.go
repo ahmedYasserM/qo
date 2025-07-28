@@ -7,10 +7,10 @@ import (
 )
 
 var (
-	infoLogger    = log.New(os.Stdout, "\033[36mℹ️ INFO:\033[0m ", 0)
-	warnLogger    = log.New(os.Stdout, "\033[33m⚠️ WARN:\033[0m ", 0)
-	errorLogger   = log.New(os.Stderr, "\033[31m❌ ERROR:\033[0m ", 0)
-	successLogger = log.New(os.Stdout, "\033[32m✅ SUCCESS:\033[0m ", 0)
+	infoLogger    = log.New(os.Stdout, "\033[36mℹ️\033[0m ", 0)
+	warnLogger    = log.New(os.Stdout, "\033[33m⚠️\033[0m ", 0)
+	errorLogger   = log.New(os.Stderr, "\033[31m❌\033[0m ", 0)
+	successLogger = log.New(os.Stdout, "\033[32m✅\033[0m ", 0)
 )
 
 // Info logs an informational message

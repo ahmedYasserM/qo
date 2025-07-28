@@ -2,9 +2,12 @@ package main
 
 import (
 	"github.com/ahmedYasserM/qo/cmd"
+	"github.com/ahmedYasserM/qo/pkg/logger"
 )
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		logger.Error(err)
+	}
 
 }

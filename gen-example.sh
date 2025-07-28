@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set base folder name
-CHALLENGE_DIR="challenge"
+CHALLENGE_DIR="test"
 
 # Create base folder
 mkdir -p "$CHALLENGE_DIR"
