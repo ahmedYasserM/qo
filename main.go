@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	if len(os.Args) == 1 {
+	if len(os.Args) == 1 && os.Args[0] == "init" {
 		if err := sandbox.StartSandBox(); err != nil {
 			logger.Error(err)
 			os.Exit(1)

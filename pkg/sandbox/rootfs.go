@@ -87,7 +87,7 @@ func ExtractRootfs() error {
 }
 
 func StartSandBox() error {
-	if len(os.Args) == 1 {
+	if len(os.Args) == 1 && os.Args[0] == "init" {
 		if err := syscall.Chroot(Rootfs); err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ func StartSandBox() error {
 	}
 
 	cmd := exec.Command("/proc/self/exe")
-	cmd.Args = []string{"qo"}
+	cmd.Args = []string{"init"}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
