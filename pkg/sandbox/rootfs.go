@@ -27,6 +27,7 @@ func pathExists(path string) bool {
 	return !os.IsNotExist(err)
 }
 
+// ExtractRootfs extracts the tar-archived rootfs folder in /tmp
 func ExtractRootfs() error {
 	if pathExists(Rootfs) {
 		if err := os.RemoveAll(Rootfs); err != nil {
