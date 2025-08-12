@@ -5,10 +5,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	_ "embed"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/ahmedYasserM/qo/pkg/logger"
@@ -87,6 +90,40 @@ func ExtractRootfs() error {
 	return nil
 }
 
+func dropToUser(username string) error {
+	passwdBytes, err := os.ReadFile("/etc/passwd")
+	if err != nil {
+		return err
+	}
+	var uid, gid int
+	var homeDir string
+	for _, line := range strings.Split(string(passwdBytes), "\n") {
+		if strings.HasPrefix(line, username+":") {
+			parts := strings.Split(line, ":")
+			uid, _ = strconv.Atoi(parts[2])
+			gid, _ = strconv.Atoi(parts[3])
+			homeDir = parts[5]
+			break
+		}
+	}
+	if uid == 0 && username != "root" {
+		return fmt.Errorf("user %s not found in chroot /etc/passwd", username)
+	}
+	if err := syscall.Setgid(gid); err != nil {
+		return err
+	}
+	if err := syscall.Setuid(uid); err != nil {
+		return err
+	}
+
+	// Set environment variables
+	os.Setenv("HOME", homeDir)
+	os.Setenv("USER", username)
+	os.Setenv("LOGNAME", username)
+
+	return nil
+}
+
 func StartSandBox() error {
 	if len(os.Args) == 1 && os.Args[0] == "init" {
 		if err := syscall.Chroot(Rootfs); err != nil {
@@ -101,6 +138,10 @@ func StartSandBox() error {
 			return err
 		}
 
+		if err := dropToUser("ahmed"); err != nil {
+			return err
+		}
+
 		logger.Info("You are now inside the isolated enviornemnt.")
 
 		cmd := exec.Command("/bin/bash")
@@ -109,9 +150,6 @@ func StartSandBox() error {
 		cmd.Stderr = os.Stderr
 
 		err := cmd.Run()
-		if err := syscall.Unmount("/proc", 0); err != nil {
-			return err
-		}
 
 		return err
 	}
@@ -125,7 +163,11 @@ func StartSandBox() error {
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
 	}
 
-	err := cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	err := syscall.Unmount(Rootfs+"/proc", 0)
 
 	return err
 }
