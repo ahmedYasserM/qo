@@ -8,9 +8,7 @@ A tool for creating customizable sandboxed Linux environments for educational te
 
 - **Secure Sandboxing**: Creates isolated Linux environments using namespaces for safe student testing
 - **Time-Locked Challenges**: Encrypts challenge archives with unlock times to prevent early access
-- **Command Monitoring**: Logs all student commands and activities during testing sessions
 - **Customizable Environments**: Control exactly which binaries and commands are available to students
-- **Automated Reporting**: Generates comprehensive PDF reports of student performance *(coming soon)*
 - **Reproducible**: Ensures consistent testing environments across different machines
 
 ## Prerequisites
@@ -34,11 +32,11 @@ curl -fsSL  https://raw.githubusercontent.com/ahmedYasserM/qo/main/scripts/insta
 1. Prepare your [challenge folder](#challenge-folder-structure) with levels and check scripts
 2. Build and encrypt the challenge archive:
    ```bash
-   sudo qo build -f <challenge folder> -p <password> -k <starterkey> -u <unlock date and time>
+   qo build -f <challenge folder> -p <password> -k <starterkey> -u <unlock date and time>
    ```
    For example:
    ```bash
-   sudo qo build -f ./my-challenges -p mypassword -k starterkey -u "2025-12-01 14:30"
+   qo build -f ./my-challenges -p mypassword -k starterkey -u "2025-12-01 14:30"
    ```
 
 ### For Students
@@ -51,6 +49,8 @@ curl -fsSL  https://raw.githubusercontent.com/ahmedYasserM/qo/main/scripts/insta
    ```bash
    sudo qo start -i 2021170034 -a test.enc -p mypassword -k starterkey -d 90m
    ```
+   _**Note:** Setting duration is not implemented yet. The option is required but has no effect._
+
 
 ## Usage
 
@@ -75,7 +75,7 @@ Prepares and encrypts challenge folders for secure distribution to students.
 
 **Example:**
 ```bash
-sudo qo build -f ./challenges -p securepass -k abc123 -u "2025-07-10 09:30" -o midterm-exam.enc
+qo build -f ./challenges -p securepass -k abc123 -u "2025-07-10 09:30" -o midterm-exam.enc
 ```
 
 ### Student Command: `start`
@@ -95,14 +95,14 @@ Launches secure testing environment for students to complete challenges.
 - `-a, --archive` — Path to encrypted challenge archive
 - `-p, --password` — Archive decryption password
 - `-k, --key` — Starter key provided by instructor
-- `-d, --duration` — Test duration (e.g., `90m`, `2h`, `1h30m`)
+- `-d, --duration` — Test duration (e.g., `90m`, `2h`, `1h30m`) _(required but not implemented yet)_
 
 **Optional Flags:**
-- `-o, --output` — Results directory (default: `eval-results`)
+- `-o, --output` — Results directory (default: `eval-results`) _(not implemented yet)_
 
 **Example:**
 ```bash
-sudo qo start -i 2021170034 -a midterm-exam.enc -p securepass -k abc123 -d 2h -o ./my-results
+sudo qo start -i 2021170034 -a midterm-exam.enc -p securepass -k abc123 -d 2h 
 ```
 
 ## Challenge Folder Structure
@@ -132,7 +132,7 @@ Each level should contain:
 ### Adding System Binaries
 First, extract the `rootfs`.
 
-```
+```bash
 # in qo/pkg/sandbox/
 sudo tar -xzvf rootfs.tar.gz
 ```
@@ -146,7 +146,7 @@ Then, check if the binary you would like to add is available in `busybox`.
 You will encounter one of two cases:
 #### 1. The binary is available in busybox
 Create a symbolic link to busybox with the name of the binary.
-```
+```bash
 ln -s busybox [command]
 ```
 #### 2. The binary is not available in busybox
@@ -163,7 +163,7 @@ Im both cases, make sure to recompress the `rootfs` and recompile after modifica
 
 ```bash
 # in qo/pkg/sandbox/
-tar -czvf rootfs.tar.gz rootfs
+sudo tar -czvf rootfs.tar.gz rootfs
 cd ../..
 # In qo/
 go install
@@ -176,4 +176,8 @@ You can customize the sandbox environment by modifying:
 - File system permissions
 - Available users and groups, etc
 
+## Coming soon
 
+- **Command Monitoring**: Log all student commands and activities during testing sessions
+- **Automated Reporting**: Generate comprehensive PDF reports of student performance 
+- **Set Challenge Duaration**: Automatically end the session after a specified duration
