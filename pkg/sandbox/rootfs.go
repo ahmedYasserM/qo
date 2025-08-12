@@ -22,7 +22,10 @@ var embeddedRootfs []byte
 
 const target = "/tmp"
 
-var Rootfs string = filepath.Join(target, "rootfs")
+var (
+	Rootfs      string = filepath.Join(target, "rootfs")
+	defaultUser string = "ahmed"
+)
 
 // PathExists checks if a file or directory exists.
 func pathExists(path string) bool {
@@ -33,6 +36,8 @@ func pathExists(path string) bool {
 // ExtractRootfs extracts the tar-archived rootfs folder in /tmp
 func ExtractRootfs() error {
 	if pathExists(Rootfs) {
+		_ = syscall.Unmount(filepath.Join(Rootfs, "proc"), syscall.MNT_FORCE) // force unmount of /proc to handle possible previous exits using external kill signal
+
 		if err := os.RemoveAll(Rootfs); err != nil {
 			return err
 		}
@@ -125,6 +130,7 @@ func dropToUser(username string) error {
 }
 
 func StartSandBox() error {
+
 	if len(os.Args) == 1 && os.Args[0] == "init" {
 		if err := syscall.Chroot(Rootfs); err != nil {
 			return err
@@ -138,7 +144,7 @@ func StartSandBox() error {
 			return err
 		}
 
-		if err := dropToUser("ahmed"); err != nil {
+		if err := dropToUser(defaultUser); err != nil {
 			return err
 		}
 
