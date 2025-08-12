@@ -93,7 +93,7 @@ func StartSandBox() error {
 			return err
 		}
 
-		if err := os.Chdir("/"); err != nil {
+		if err := os.Chdir("/tmp"); err != nil {
 			return err
 		}
 

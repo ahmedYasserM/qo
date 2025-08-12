@@ -50,7 +50,7 @@ var startCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		if os.Geteuid() != 0 {
-			logger.Error(fmt.Errorf("This program must be run as root."))
+			logger.Error(fmt.Errorf("this program must be run as root"))
 			os.Exit(1)
 		}
 
