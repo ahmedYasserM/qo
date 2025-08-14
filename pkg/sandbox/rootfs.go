@@ -148,6 +148,10 @@ func StartSandBox() error {
 			return err
 		}
 
+		if err := os.Setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"); err != nil {
+			return err
+		}
+
 		logger.Info("You are now inside the isolated enviornemnt.")
 
 		cmd := exec.Command("/bin/bash")
