@@ -27,6 +27,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/ahmedYasserM/qo/pkg/archive"
@@ -36,7 +37,8 @@ import (
 )
 
 var (
-	id            uint16
+	idStr         string
+	id            uint64
 	archivePath   string
 	utKeyStart    string
 	passwordStart string
@@ -74,7 +76,7 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 
 	// Flags
-	startCmd.Flags().Uint16VarP(&id, "id", "i", 0, "Student ID (required)")
+	startCmd.Flags().StringVarP(&idStr, "id", "i", "0", "Student ID (required)")
 	startCmd.Flags().StringVarP(&archivePath, "archive", "a", "", "Path to the encrypted archive file (required)")
 	startCmd.Flags().StringVarP(&passwordStart, "password", "p", "", "Password used for encrypt the archive (required)")
 	startCmd.Flags().StringVarP(&utKeyStart, "key", "k", "", "Starter key used for decryption (required)")
@@ -89,4 +91,12 @@ func init() {
 
 	rootCmd.SilenceUsage = true
 	rootCmd.SilenceErrors = true
+
+	// This is done to enable user to input id like `093` and parse it as decimal not octal
+	var err error
+	id, err = strconv.ParseUint(idStr, 10, 16)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
 }
