@@ -124,7 +124,7 @@ func DecryptTarArchive(encryptedFile, password, utKey string) error {
 
 	if !canProceed {
 		logger.Warn("Can not decrypt the archive before the unlock time.")
-		return nil
+		os.Exit(0)
 	}
 
 	logger.Info("Unlock time reached. Extracting archive...")
