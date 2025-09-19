@@ -56,11 +56,11 @@ var startCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if err := archive.DecryptTarArchive(archivePath, passwordStart, utKeyStart); err != nil {
+		if err := sandbox.ExtractRootfs(); err != nil {
 			return err
 		}
 
-		if err := sandbox.ExtractRootfs(); err != nil {
+		if err := archive.DecryptTarArchive(archivePath, passwordStart, utKeyStart); err != nil {
 			return err
 		}
 
